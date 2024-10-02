@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import NoOrders from './NoOrders';
 import TableOrders from './TableOrders';
 import axios from "axios";
+import { ModalConfirm } from './ModalConfirm';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -20,6 +21,10 @@ const Orders = () => {
     loadOrders(orderState);
   }, [orderState]);
 
+  const handleModalCancelClick = (orderState) => { 
+    
+  }
+
   return (
     <>
       <div className="form-floating my-3">
@@ -36,8 +41,12 @@ const Orders = () => {
         <label className="form-label" htmlFor="orderState">Status dos Pedidos</label>
       </div>
       {orders.length > 0 ? 
-      <TableOrders  items={orders} /> : 
-      <NoOrders     state={orderState} />}
+        <>
+        <ModalConfirm modalId="modalCancelOrder"
+        question="Deseja realmente cancelar o pedido?"/>
+          <TableOrders  items={orders} /> : 
+        </> :
+        <NoOrders     state={orderState} />}
     </>
   );
 }
