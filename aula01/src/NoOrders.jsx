@@ -1,6 +1,6 @@
-const NoOrders = () => {
+const NoOrders = ({state}) => {
   return (
-    <p className="lead">Não há pedidos no estado selecionado</p>
+    <p className="lead">Não há pedidos no estado selecionado <b className="fw-bold">{state}</b>.</p>
   );
 }
 
