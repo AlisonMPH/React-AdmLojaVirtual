@@ -1,0 +1,22 @@
+import TableOdersLine from "./TableOrdersLine";
+
+const TableOrders = ({ items }) => {
+    return (
+        <>
+            <table className="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Data Hora</th>
+                        <th>Valor Total</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {items.map(o => <TableOdersLine item={o} key={o.id} /> )}
+                </tbody>
+            </table>
+        </>
+    );
+}
+export default TableOrders;
