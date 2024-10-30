@@ -1,54 +1,106 @@
-import { useEffect, useState } from 'react';
-import NoOrders from './NoOrders';
-import TableOrders from './TableOrders';
-import axios from "axios";
-import { ModalConfirm } from './ModalConfirm';
+import { useEffect, useState } from "react";
+import api from './axiosApi';
+import TableOrders from "./TableOrders";
+import NoOrders from "./NoOrders";
+import ModalConfirm from "./ModalConfirm";
+import Loading from "./Loading";
 
 const Orders = () => {
-  const [orders, setOrders] = useState([]);
-  const [orderState, setOrderState] = useState("pendente");
-  
-  const loadOrders = (state) => {
-    const ordersApi = `http://127.0.0.1:8000/admin/obter_pedidos_por_estado/${state}`;
-    axios.get(ordersApi).then((response) => { setOrders(response.data);
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-  }
+    const [orders, setOrders] = useState([]);
+    const [orderState, setOrderState] = useState("pendente");
+    const [selectedOrderId, setSelectedOrderId] = useState(0);
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadOrders(orderState);
-  }, [orderState]);
+    const loadOrders = (state) => {
+        setLoading(true);
+        const ordersEndpoint = `obter_pedidos_por_estado/${state}`;
+        api.get(ordersEndpoint)
+            .then((response) => {
+                setOrders(response.data);
+            })
+            .catch((error) => {
+                console.log(error);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    }
 
-  const handleModalCancelClick = (orderState) => { 
-    
-  }
+    const cancelOrder = (orderId) => {
+        setLoading(true);
+        api.post(`cancelar_pedido/${orderId}`)
+            .then(response => {
+                if (response.status === 204)
+                    loadOrders(orderState);
+            })
+            .catch(error => {
+                console.error('Erro ao cancelar pedido:', error);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    };
 
-  return (
-    <>
-      <div className="form-floating my-3">
-        <select id="orderState" className="form-control" onChange={(event) => setOrderState(event.target.value)}>
-          <option value="carrinho">Carrinho</option>
-          <option value="pendente">Pendente</option>
-          <option value="pago">Pago</option>
-          <option value="faturado">Faturado</option>
-          <option value="separado">Separado</option>
-          <option value="enviado">Enviado</option>
-          <option value="entregue">Entregue</option>
-          <option value="cancelado">Cancelado</option>
-        </select>
-        <label className="form-label" htmlFor="orderState">Status dos Pedidos</label>
-      </div>
-      {orders.length > 0 ? 
+    const evolveOrder = (orderId) => {
+        setLoading(true);
+        api.post(`evoluir_pedido/${orderId}`)
+            .then(response => {
+                if (response.status === 204)
+                    loadOrders(orderState);
+            })
+            .catch(error => {
+                console.error('Erro ao evoluir pedido:', error);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    };
+
+    const handleCancelOrder = (orderId) => {
+        setSelectedOrderId(orderId);
+        const modal = new bootstrap.Modal(document.getElementById('modalCancelOrder'));
+        modal.show();
+    }
+
+    const handleEvolveOrder = (orderId) => {
+        setSelectedOrderId(orderId);
+        const modal = new bootstrap.Modal(document.getElementById('modalEvolveOrder'));
+        modal.show();
+    }
+
+    useEffect(() => {
+        loadOrders(orderState);
+    }, [orderState]);
+
+    return (
         <>
-        <ModalConfirm modalId="modalCancelOrder"
-        question="Deseja realmente cancelar o pedido?"/>
-          <TableOrders  items={orders} /> : 
-        </> :
-        <NoOrders     state={orderState} />}
-    </>
-  );
+            <div className="form-floating my-3">
+                <select id="orderState" value={orderState} onChange={(event) => setOrderState(event.target.value)} className="form-control">
+                    <option value="carrinho">Carrinho</option>
+                    <option value="pendente">Pendente</option>
+                    <option value="pago">Pago</option>
+                    <option value="faturado">Faturado</option>
+                    <option value="separado">Separado</option>
+                    <option value="enviado">Enviado</option>
+                    <option value="entregue">Entregue</option>
+                    <option value="cancelado">Cancelado</option>
+                </select>
+                <label htmlFor="orderState" className="form-label">
+                    Estado do Pedido:
+                </label>
+            </div>
+            {orders.length > 0 ?
+                <>
+                    <ModalConfirm modalId="modalCancelOrder" question="Deseja realmente cancelar o pedido?" confirmAction={() => cancelOrder(selectedOrderId)}
+                    />
+                    <ModalConfirm modalId="modalEvolveOrder" question="Deseja realmente evoluir o pedido?" confirmAction={() => evolveOrder(selectedOrderId)}
+                    />
+                    <TableOrders items={orders} handleCancelOrder={handleCancelOrder} handleEvolveOrder={handleEvolveOrder} />
+                </> :
+                (!loading && <NoOrders state={orderState} />)}
+            {loading && <Loading />}
+        </>
+    );
 }
 
 export default Orders;
