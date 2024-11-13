@@ -1,4 +1,5 @@
-import TableUsersLine from "./TableUsersLine"
+import PropTypes from 'prop-types';
+import TableUsersLine from './TableUsersLine'
 
 const TableUsers = ({ items, handleDeleteUser }) => {
     return (
@@ -7,16 +8,21 @@ const TableUsers = ({ items, handleDeleteUser }) => {
                 <tr>
                     <th>Código</th>
                     <th>Nome</th>
-                    <th>CPF</th>
-                    <th>Data de Nascimento</th>
-                    <th>Email</th>
+                    <th>E-mail</th>
+                    <th>Telefone</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
-                {items.map(p => <TableUsersLine item={p} key={p.id} handleDeleteUser={handleDeleteUser} />)}
+                {items.map(u => <TableUsersLine item={u} key={u.id} handleDeleteUser={handleDeleteUser} />)}
             </tbody>
         </table>
-    )
+    );
 }
+
+TableUsers.propTypes = {
+    items: PropTypes.array.isRequired,
+    handleDeleteUser: PropTypes.func.isRequired
+};
 
 export default TableUsers;

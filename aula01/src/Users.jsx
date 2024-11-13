@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
-import api from "./axiosApi";
+import TableUsers from './TableUsers';
 import Loading from "./Loading";
+import api from "./axiosApi";
 import ModalConfirm from "./ModalConfirm";
 import NoUsers from "./NoUsers";
-import TableUsers from "./TableUsers";
 
 const Users = () => {
     const [users, setUsers] = useState([]);
-    const [selectedUserId, setSelectedUserId] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [selectedUserId, setSelectedUserId] = useState(0);
 
     const loadUsers = () => {
         setLoading(true);
-        const usersEndpoint = "obter_usuarios";
+        const usersEndpoint = "admin/obter_usuarios";
         api.get(usersEndpoint)
             .then((response) => {
                 setUsers(response.data);
@@ -23,17 +23,17 @@ const Users = () => {
             .finally(() => {
                 setLoading(false);
             });
-    }
+    };
 
     const deleteUser = (userId) => {
         setLoading(true);
-        api.post("excluir_usuario", {"id_usuario": userId})
+        api.postForm("excluir_usuario", { "id_usuario": userId })
             .then(response => {
                 if (response.status === 204)
                     loadUsers();
             })
             .catch(error => {
-                console.error('Erro ao excluir usuario:', error);
+                console.error('Erro ao excluir o usuário:', error);
             })
             .finally(() => {
                 setLoading(false);
@@ -54,14 +54,13 @@ const Users = () => {
         <>
             {users.length > 0 ?
                 <>
-                    <ModalConfirm modalId="modalDeleteUser" question="Deseja realmente excluir o usuario?" confirmAction={() => deleteUser(selectedUserId)} />
-                    <TableUsers items={users} handleDeleteUser={handleDeleteUser}/> 
+                    <ModalConfirm modalId="modalDeleteUser" question="Deseja realmente excluir este usuário?" confirmAction={() => deleteUser(selectedUserId)} />
+                    <TableUsers items={users} handleDeleteUser={handleDeleteUser} />
                 </> :
-                (!loading && <NoUsers />)
-            }
+                (!loading && <NoUsers />)}
             {loading && <Loading />}
         </>
     );
 }
 
-export default Users;
+export default Users
